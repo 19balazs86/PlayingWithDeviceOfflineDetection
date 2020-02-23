@@ -29,6 +29,17 @@ namespace DeviceFunction
       await entityClient.SignalEntityAsync<IDeviceEntity>(getEntityId(deviceId), device => device.DeviceTimeout());
     }
 
+    [FunctionName(nameof(HandleDeleteMessages))]
+    public static async Task HandleDeleteMessages(
+      [DurableClient] IDurableEntityClient entityClient,
+      [QueueTrigger(DeviceEntity.DeleteQueue)] string deviceId,
+      ILogger log)
+    {
+      log.LogInformation($"{nameof(HandleDeleteMessages)} function processing: {deviceId}");
+
+      await entityClient.SignalEntityAsync<IDeviceEntity>(getEntityId(deviceId), device => device.DeleteDevice());
+    }
+
     private static EntityId getEntityId(string deviceId)
       => new EntityId(nameof(DeviceEntity), deviceId);
   }

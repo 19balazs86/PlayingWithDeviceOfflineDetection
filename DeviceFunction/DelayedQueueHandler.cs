@@ -9,6 +9,7 @@ namespace DeviceFunction
   {
     Task<(string delayedMessageId, string popReceipt)> AddMessage(string content);
     Task<string> UpdateMessage(string delayedMessageId, string popReceipt);
+    Task DeleteMessage(string delayedMessageId, string popReceipt);
   }
 
   public class DelayedQueueHandler : IDelayedQueueHandler
@@ -50,6 +51,21 @@ namespace DeviceFunction
         // Add timeout message;
 
         return null;
+      }
+    }
+
+    public async Task DeleteMessage(string delayedMessageId, string popReceipt)
+    {
+      if (string.IsNullOrWhiteSpace(delayedMessageId) || string.IsNullOrWhiteSpace(popReceipt))
+        return;
+
+      try
+      {
+        await _timeoutQueue.DeleteMessageAsync(delayedMessageId, popReceipt);
+      }
+      catch (StorageException)
+      {
+        // There was a message but not any more.
       }
     }
   }

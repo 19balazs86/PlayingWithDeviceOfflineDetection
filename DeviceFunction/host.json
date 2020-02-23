@@ -11,7 +11,7 @@
     "durableTask": {
       "hubName": "Devices",
       "storageProvider": {
-        "partitionCount": 16
+        "partitionCount": 4 //16
       },
       "maxConcurrentActivityFunctions": 250
     }
