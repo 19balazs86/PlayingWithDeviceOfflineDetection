@@ -19,12 +19,12 @@ namespace DeviceFunction
   [JsonObject(MemberSerialization.OptIn)]
   public class DeviceEntity : IDeviceEntity
   {
-    public const string TimeOutQueue = "timeout-messages";
+    public const string TimeoutQueue = "timeout-messages";
 
     private readonly TimeSpan _offlineAfter = TimeSpan.FromSeconds(30);
 
     [JsonProperty]
-    public string Id { get; set; }
+    public string Id { get; set; } // Entity.Current.EntityKey
 
     [JsonProperty]
     public DateTime? LastCommunicationDateTime { get; set; }
@@ -56,7 +56,7 @@ namespace DeviceFunction
     public static async Task DispatchDeviceEntity(
       [EntityTrigger] IDurableEntityContext context,
       [SignalR(HubName = "devicestatus")] IAsyncCollector<SignalRMessage> signalRMessages,
-      [Queue(TimeOutQueue)] CloudQueue timeoutQueue,
+      [Queue(TimeoutQueue)] CloudQueue timeoutQueue,
       ILogger logger)
     {
       //if (!context.HasState)
@@ -96,26 +96,25 @@ namespace DeviceFunction
 
     private async Task<bool> updateTimeoutMessage()
     {
-      if (TimeoutQueueMessageId is object)
+      if (TimeoutQueueMessageId is null) return false;
+
+      try
       {
-        try
-        {
-          var message = new CloudQueueMessage(TimeoutQueueMessageId, TimeoutQueueMessagePopReceipt);
+        var message = new CloudQueueMessage(TimeoutQueueMessageId, TimeoutQueueMessagePopReceipt);
 
-          await _timeoutQueue.UpdateMessageAsync(message, _offlineAfter, MessageUpdateFields.Visibility);
+        await _timeoutQueue.UpdateMessageAsync(message, _offlineAfter, MessageUpdateFields.Visibility);
 
-          TimeoutQueueMessagePopReceipt = message.PopReceipt;
+        TimeoutQueueMessagePopReceipt = message.PopReceipt;
 
-          return true;
-        }
-        catch (StorageException)
-        {
-          // There is a short window... There was a message but not any more.
-          // await addTimeoutMessage();
-        }
+        return true;
       }
+      catch (StorageException)
+      {
+        // There was a message but not any more.
+        // Add timeout message;
 
-      return false;
+        return false;
+      }
     }
 
     private async Task reportDeviceStatus(string status)

@@ -21,7 +21,7 @@ namespace DeviceFunction
     [FunctionName(nameof(HandleOfflineMessages))]
     public static async Task HandleOfflineMessages(
       [DurableClient] IDurableEntityClient entityClient,
-      [QueueTrigger(DeviceEntity.TimeOutQueue)] string deviceId,
+      [QueueTrigger(DeviceEntity.TimeoutQueue)] string deviceId,
       ILogger log)
     {
       log.LogInformation($"{nameof(HandleOfflineMessages)} function processing: {deviceId}");

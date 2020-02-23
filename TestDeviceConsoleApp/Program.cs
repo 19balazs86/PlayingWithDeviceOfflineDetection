@@ -15,7 +15,7 @@ namespace TestDeviceConsoleApp
 
     public static async Task Main(string[] args)
     {
-      _queue = await createCloudQueue();
+      _queue = await createCloudQueue(true);
 
       CancellationTokenSource cts = null;
       Task messageSenderTask      = null;
@@ -69,10 +69,11 @@ namespace TestDeviceConsoleApp
       await _queue.AddMessageAsync(new CloudQueueMessage(deviceId.ToString()));
     }
 
-    private static async Task<CloudQueue> createCloudQueue()
+    private static async Task<CloudQueue> createCloudQueue(bool isLocal)
     {
-      //string storageConnString = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DeviceStorageConnString");
-      string storageConnString = "UseDevelopmentStorage=true";
+      string storageConnString = isLocal
+        ? "UseDevelopmentStorage=true"
+        : Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DeviceStorageConnString");
 
       CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnString);
       CloudQueueClient queueClient       = storageAccount.CreateCloudQueueClient();
