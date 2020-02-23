@@ -4,7 +4,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 
@@ -21,8 +20,6 @@ namespace DeviceFunction
   {
     public const string TimeoutQueue = "timeout-messages";
 
-    private readonly TimeSpan _offlineAfter = TimeSpan.FromSeconds(30);
-
     [JsonProperty]
     public string Id { get; set; } // Entity.Current.EntityKey
 
@@ -30,26 +27,26 @@ namespace DeviceFunction
     public DateTime? LastCommunicationDateTime { get; set; }
 
     [JsonProperty]
-    public string TimeoutQueueMessageId { get; set; }
+    public string TimeoutMessageId { get; set; }
 
     [JsonProperty]
-    public string TimeoutQueueMessagePopReceipt { get; set; }
+    public string TimeoutMessagePopReceipt { get; set; }
 
     private readonly ILogger _logger;
-    private readonly CloudQueue _timeoutQueue;
+    private readonly IDelayedQueueHandler _timeoutQueueHandler;
     private readonly IAsyncCollector<SignalRMessage> _signalRMessages;
 
     public DeviceEntity(
       string id,
       ILogger logger,
-      CloudQueue timeoutQueue,
+      IDelayedQueueHandler timeoutQueueHandler,
       IAsyncCollector<SignalRMessage> signalRMessages)
     {
       Id = id;
 
-      _logger          = logger;
-      _timeoutQueue    = timeoutQueue;
-      _signalRMessages = signalRMessages;
+      _logger              = logger;
+      _timeoutQueueHandler = timeoutQueueHandler;
+      _signalRMessages     = signalRMessages;
     }
 
     [FunctionName(nameof(DeviceEntity))]
@@ -62,59 +59,33 @@ namespace DeviceFunction
       //if (!context.HasState)
       //  context.SetState(new DeviceEntity(context.EntityKey, logger, timeoutQueue, signalRMessages));
 
-      await context.DispatchAsync<DeviceEntity>(context.EntityKey, logger, timeoutQueue, signalRMessages);
+      IDelayedQueueHandler timeoutQueueHandler = new DelayedQueueHandler(timeoutQueue, TimeSpan.FromSeconds(30));
+
+      await context.DispatchAsync<DeviceEntity>(context.EntityKey, logger, timeoutQueueHandler, signalRMessages);
     }
 
     public async Task MessageReceived()
     {
       LastCommunicationDateTime = DateTime.UtcNow;
 
-      if (await updateTimeoutMessage()) return;
+      // Update timeout mesage.
+      TimeoutMessagePopReceipt = await _timeoutQueueHandler.UpdateMessage(TimeoutMessageId, TimeoutMessagePopReceipt);
 
-      await addTimeoutMessage();
+      if (string.IsNullOrWhiteSpace(TimeoutMessagePopReceipt))
+      {
+        // Add timeout mesage.
+        (TimeoutMessageId, TimeoutMessagePopReceipt) = await _timeoutQueueHandler.AddMessage(Id);
 
-      await reportDeviceStatus("online");
+        await reportDeviceStatus("online");
+      }
     }
 
     public async Task DeviceTimeout()
     {
-      TimeoutQueueMessageId         = null;
-      TimeoutQueueMessagePopReceipt = null;
+      TimeoutMessageId         = null;
+      TimeoutMessagePopReceipt = null;
 
       await reportDeviceStatus("offline");
-    }
-
-    private async Task addTimeoutMessage()
-    {
-      var message = new CloudQueueMessage(Id);
-
-      await _timeoutQueue.AddMessageAsync(message, null, _offlineAfter, null, null);
-
-      TimeoutQueueMessageId         = message.Id;
-      TimeoutQueueMessagePopReceipt = message.PopReceipt;
-    }
-
-    private async Task<bool> updateTimeoutMessage()
-    {
-      if (TimeoutQueueMessageId is null) return false;
-
-      try
-      {
-        var message = new CloudQueueMessage(TimeoutQueueMessageId, TimeoutQueueMessagePopReceipt);
-
-        await _timeoutQueue.UpdateMessageAsync(message, _offlineAfter, MessageUpdateFields.Visibility);
-
-        TimeoutQueueMessagePopReceipt = message.PopReceipt;
-
-        return true;
-      }
-      catch (StorageException)
-      {
-        // There was a message but not any more.
-        // Add timeout message;
-
-        return false;
-      }
     }
 
     private async Task reportDeviceStatus(string status)
