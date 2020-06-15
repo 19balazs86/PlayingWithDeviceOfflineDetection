@@ -8,10 +8,10 @@ using Microsoft.Azure.Storage.Queue;
 
 namespace TestDeviceConsoleApp
 {
-  public class Program
+  public static class Program
   {
     private static CloudQueue _queue;
-    private static Random _random = new Random();
+    private static readonly Random _random = new Random();
 
     public static async Task Main(string[] args)
     {
