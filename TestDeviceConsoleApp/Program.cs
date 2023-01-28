@@ -1,88 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Azure.Storage;
+﻿using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Queue;
 
-namespace TestDeviceConsoleApp
+namespace TestDeviceConsoleApp;
+
+public static class Program
 {
-  public static class Program
-  {
     private static CloudQueue _queue;
-    private static readonly Random _random = new Random();
 
     public static async Task Main(string[] args)
     {
-      _queue = await createCloudQueue(true);
+        _queue = await createCloudQueue(true);
 
-      CancellationTokenSource cts = null;
-      Task messageSenderTask      = null;
+        CancellationTokenSource cts = null;
+        Task messageSenderTask = null;
 
-      while (true)
-      {
-        Console.WriteLine("Enter number of devices. 0 to exit");
+        while (true)
+        {
+            Console.WriteLine("Enter number of devices. 0 to exit");
 
-        string input     = Console.ReadLine();
-        int devicesCount = int.Parse(input);
+            string input     = Console.ReadLine();
+            int devicesCount = int.Parse(input);
 
-        cts?.Cancel();
-        messageSenderTask?.Wait();
+            cts?.Cancel();
+            messageSenderTask?.Wait();
 
-        if (devicesCount <= 0) break;
+            if (devicesCount <= 0) break;
 
-        cts = new CancellationTokenSource();
+            cts = new CancellationTokenSource();
 
-        messageSenderTask = messageSender(devicesCount, cts.Token);
-      }
+            messageSenderTask = messageSender(devicesCount, cts.Token);
+        }
     }
 
     private static async Task messageSender(int devicesCount, CancellationToken ct)
     {
-      while (!ct.IsCancellationRequested)
-      {
-        List<Task> tasks = Enumerable
-          .Range(1, devicesCount)
-          .Select(sendDeviceId)
-          .ToList();
-
-        tasks.Add(Task.Delay(TimeSpan.FromSeconds(10), ct));
-
-        try
+        while (!ct.IsCancellationRequested)
         {
-          await Task.WhenAll(tasks);
+            List<Task> tasks = Enumerable
+                .Range(1, devicesCount)
+                .Select(sendDeviceId)
+                .ToList();
 
-          Console.WriteLine("Messages has been sent.");
+            tasks.Add(Task.Delay(TimeSpan.FromSeconds(10), ct));
+
+            try
+            {
+                await Task.WhenAll(tasks);
+
+                Console.WriteLine("Messages has been sent.");
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("MessageSender is cancelled.");
+            }
         }
-        catch (TaskCanceledException)
-        {
-          Console.WriteLine("MessageSender is cancelled.");
-        }
-      }
     }
 
     private static async Task sendDeviceId(int deviceId)
     {
-      await Task.Delay(_random.Next(1, 500));
+        await Task.Delay(Random.Shared.Next(1, 500));
 
-      await _queue.AddMessageAsync(new CloudQueueMessage(deviceId.ToString()));
+        await _queue.AddMessageAsync(new CloudQueueMessage(deviceId.ToString()));
     }
 
     private static async Task<CloudQueue> createCloudQueue(bool isLocal)
     {
-      string storageConnString = isLocal
-        ? "UseDevelopmentStorage=true"
-        : Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DeviceStorageConnString");
+        string storageConnString = isLocal
+            ? "UseDevelopmentStorage=true"
+            : Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DeviceStorageConnString");
 
-      CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnString);
-      CloudQueueClient queueClient       = storageAccount.CreateCloudQueueClient();
+        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnString);
+        CloudQueueClient queueClient       = storageAccount.CreateCloudQueueClient();
 
-      CloudQueue queue = queueClient.GetQueueReference("device-messages");
+        CloudQueue queue = queueClient.GetQueueReference("device-messages");
 
-      await queue.CreateIfNotExistsAsync();
+        await queue.CreateIfNotExistsAsync();
 
-      return queue;
+        return queue;
     }
-  }
 }
