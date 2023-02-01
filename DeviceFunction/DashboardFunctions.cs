@@ -3,10 +3,10 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DeviceFunction;
 
@@ -23,16 +23,14 @@ public static class DashboardFunctions
     }
 
     [FunctionName(nameof(Dashboard))]
-    public static HttpResponseMessage Dashboard(
-        [HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequest req,
-        ExecutionContext context)
+    public static async Task<HttpResponseMessage> Dashboard([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequest req)
     {
-        string path    = Path.Combine(context.FunctionAppDirectory, "dashboard.html");
-        string content = File.ReadAllText(path);
+        //string path = Path.Combine(context.FunctionAppDirectory, "dashboard.html"); // This could be pass in the method: ExecutionContext context
+        string dashboardHTML = await File.ReadAllTextAsync("dashboard.html");
 
-        return new HttpResponseMessage(HttpStatusCode.OK)
+        return new HttpResponseMessage
         {
-            Content = new StringContent(content, Encoding.UTF8, MediaTypeNames.Text.Html)
+            Content = new StringContent(dashboardHTML, Encoding.UTF8, MediaTypeNames.Text.Html)
         };
     }
 
