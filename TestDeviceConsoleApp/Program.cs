@@ -1,18 +1,18 @@
-﻿using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Queue;
+﻿using Azure.Storage.Queues;
+using System.Text;
 
 namespace TestDeviceConsoleApp;
 
 public static class Program
 {
-    private static CloudQueue _queue;
+    private static QueueClient _queueClient;
 
     public static async Task Main(string[] args)
     {
-        _queue = await createCloudQueue(true);
+        _queueClient = await createCloudQueue(isLocal: true);
 
         CancellationTokenSource cts = null;
-        Task messageSenderTask = null;
+        Task messageSenderTask      = null;
 
         while (true)
         {
@@ -60,22 +60,22 @@ public static class Program
     {
         await Task.Delay(Random.Shared.Next(1, 500));
 
-        await _queue.AddMessageAsync(new CloudQueueMessage(deviceId.ToString()));
+        // In the FunctionApp the package "Microsoft.Azure.WebJobs.Extensions.Storage" read the message in Base64 string with QueueTrigger
+        string base64DevideId = Convert.ToBase64String(Encoding.UTF8.GetBytes(deviceId.ToString()));
+
+        await _queueClient.SendMessageAsync(base64DevideId);
     }
 
-    private static async Task<CloudQueue> createCloudQueue(bool isLocal)
+    private static async Task<QueueClient> createCloudQueue(bool isLocal)
     {
         string storageConnString = isLocal
             ? "UseDevelopmentStorage=true"
             : Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DeviceStorageConnString");
 
-        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnString);
-        CloudQueueClient queueClient       = storageAccount.CreateCloudQueueClient();
+        var queueClient = new QueueClient(storageConnString, queueName: "device-messages");
 
-        CloudQueue queue = queueClient.GetQueueReference("device-messages");
+        await queueClient.CreateIfNotExistsAsync();
 
-        await queue.CreateIfNotExistsAsync();
-
-        return queue;
+        return queueClient;
     }
 }
