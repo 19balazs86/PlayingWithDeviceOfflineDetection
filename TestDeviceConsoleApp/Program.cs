@@ -1,5 +1,4 @@
 ﻿using Azure.Storage.Queues;
-using System.Text;
 
 namespace TestDeviceConsoleApp;
 
@@ -60,10 +59,7 @@ public static class Program
     {
         await Task.Delay(Random.Shared.Next(1, 500));
 
-        // In the FunctionApp the package "Microsoft.Azure.WebJobs.Extensions.Storage" read the message in Base64 string with QueueTrigger
-        string base64DevideId = Convert.ToBase64String(Encoding.UTF8.GetBytes(deviceId.ToString()));
-
-        await _queueClient.SendMessageAsync(base64DevideId);
+        await _queueClient.SendMessageAsync(deviceId.ToString());
     }
 
     private static async Task<QueueClient> createCloudQueue(bool isLocal)
@@ -72,7 +68,10 @@ public static class Program
             ? "UseDevelopmentStorage=true"
             : Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DeviceStorageConnString");
 
-        var queueClient = new QueueClient(storageConnString, queueName: "device-messages");
+        // In the Function App, the "Microsoft.Azure.WebJobs.Extensions.Storage" package reads messages as Base64 strings using the QueueTrigger.
+        var options = new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64 };
+
+        var queueClient = new QueueClient(storageConnString, queueName: "device-messages", options);
 
         await queueClient.CreateIfNotExistsAsync();
 
