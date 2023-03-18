@@ -34,6 +34,9 @@ public static class DashboardFunctions
         };
     }
 
+    // Using Azure Functions built-in authentication
+    // https://learn.microsoft.com/en-us/azure/azure-signalr/signalr-concept-serverless-development-config#using-app-service-authentication
+    
     //[FunctionName("negotiate")]
     //public static IActionResult GetSignalRInfoAuthenticated(
     //    [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
