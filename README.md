@@ -4,5 +4,5 @@ The idea of this concept came from [Device Offline detection with Durable Entiti
 
 #### Useful links
 
-- [Azure Durable Entities: What are they good for?](https://markheath.net/post/durable-entities-what-are-they-good-for) (*Mark Heath*)
-
+- [Strongly typed ServerlessHub in Isolated worker model](https://learn.microsoft.com/en-us/azure/azure-signalr/signalr-concept-serverless-development-config?tabs=isolated-process) 📚*MS-Learn*
+- [Azure Durable Entities: What are they good for?](https://markheath.net/post/durable-entities-what-are-they-good-for) 📓*Mark Heath*
