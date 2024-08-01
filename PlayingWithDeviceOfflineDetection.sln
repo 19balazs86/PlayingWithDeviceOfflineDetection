@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceFunction", "DeviceFunction\DeviceFunction.csproj", "{50494B30-F84E-483A-A187-8EECAF995E6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceFunctionInProcess", "DeviceFunctionInProcess\DeviceFunctionInProcess.csproj", "{50494B30-F84E-483A-A187-8EECAF995E6A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDeviceConsoleApp", "TestDeviceConsoleApp\TestDeviceConsoleApp.csproj", "{50ACDB32-9595-4C0F-BF60-FA661E42FB42}"
 EndProject
