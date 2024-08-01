@@ -1,4 +1,6 @@
 using Azure.Storage.Queues;
+using DeviceFunction.Core;
+using DeviceFunction.Functions;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +24,8 @@ public static class Program
 
     private static void configureServices(HostBuilderContext builderContext, IServiceCollection services)
     {
+        services.AddHostedService<InfrastructureService>();
+
         string storageConnString = builderContext.Configuration["AzureWebJobsStorage"]
             ?? throw new NullReferenceException("Missing configration value for AzureWebJobsStorage");
 

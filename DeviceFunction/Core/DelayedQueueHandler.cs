@@ -2,7 +2,7 @@
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 
-namespace DeviceFunction;
+namespace DeviceFunction.Core;
 
 public interface IDelayedQueueHandler
 {

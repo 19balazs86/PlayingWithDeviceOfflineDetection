@@ -2,7 +2,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using System.Net;
 
-namespace DeviceFunction;
+namespace DeviceFunction.Functions;
 
 public static class DashboardFunctions
 {

@@ -2,7 +2,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 
-namespace DeviceFunction;
+namespace DeviceFunction.Functions;
 
 public sealed class DeviceFunctions
 {
