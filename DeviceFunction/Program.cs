@@ -38,8 +38,8 @@ public static class Program
                 .ConfigureOptions(options => options.MessageEncoding = QueueMessageEncoding.Base64);
         });
 
-        services.addDelayedQueueHandler(DelayedQueueHandler.TimeoutQueue, TimeoutQueueHandlerKey, TimeSpan.FromSeconds(30));
-        services.addDelayedQueueHandler(DelayedQueueHandler.DeleteQueue,  DeleteQueueHandlerKey,  TimeSpan.FromSeconds(60));
+        services.addDelayedQueueHandler(DeviceFunctions.TimeoutQueue, TimeoutQueueHandlerKey, TimeSpan.FromSeconds(30));
+        services.addDelayedQueueHandler(DeviceFunctions.DeleteQueue,  DeleteQueueHandlerKey,  TimeSpan.FromSeconds(60));
     }
 
     private static void addDelayedQueueHandler(this IServiceCollection services, string queueName, string serviceKey, TimeSpan visibilityTimeout)

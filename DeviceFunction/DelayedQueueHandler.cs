@@ -15,9 +15,6 @@ public interface IDelayedQueueHandler
 
 public sealed class DelayedQueueHandler : IDelayedQueueHandler
 {
-    public const string TimeoutQueue = "timeout-messages";
-    public const string DeleteQueue  = "delete-devices";
-
     private readonly QueueClient _queueClient;
     private readonly TimeSpan _visibilityTimeout;
 
