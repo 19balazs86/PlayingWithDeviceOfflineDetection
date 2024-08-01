@@ -1,0 +1,19 @@
+{
+  "version": "2.0",
+  "logging": {
+    "logLevel": {
+      "default": "Warning",
+      "Host": "Warning",
+      "Function": "Debug"
+    }
+  },
+  "extensions": {
+    "durableTask": {
+      "hubName": "Devices",
+      "storageProvider": {
+        "partitionCount": 4 //16
+      },
+      "maxConcurrentActivityFunctions": 250
+    }
+  }
+}
