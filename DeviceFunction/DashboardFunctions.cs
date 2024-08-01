@@ -1,23 +1,42 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace DeviceFunction;
 
-public class DashboardFunctions
+public static class DashboardFunctions
 {
-    private readonly ILogger<DashboardFunctions> _logger;
+    public const string SignalRHubName = "devicestatus";
 
-    public DashboardFunctions(ILogger<DashboardFunctions> logger)
+    [Function("negotiate")]
+    public static string GetSignalRInfo(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req,
+        [SignalRConnectionInfoInput(HubName = SignalRHubName)] string connectionInfo)
     {
-        _logger = logger;
+        // AzureSignalRConnectionString environment variable is defined with the serverless SignalR service ConnString.
+
+        return connectionInfo;
     }
 
-    [Function("Function1")]
-    public string Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
+    [Function(nameof(Dashboard))]
+    public static async Task<HttpResponseData> Dashboard([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req)
     {
-        _logger.LogInformation("C# HTTP trigger function processed a request.");
+        // string path = Path.Combine(context.FunctionAppDirectory, "dashboard.html"); // 'ExecutionContext context' could be a parameter
 
-        return "Welcome to Azure Functions!";
+        string dashboardHTML = await File.ReadAllTextAsync("dashboard.html");
+
+        return await req.createStringResponseAsync(dashboardHTML);
+    }
+
+    private static async Task<HttpResponseData> createStringResponseAsync(
+        this HttpRequestData request,
+        string value,
+        HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        HttpResponseData response = request.CreateResponse(statusCode);
+
+        await response.WriteStringAsync(value);
+
+        return response;
     }
 }
