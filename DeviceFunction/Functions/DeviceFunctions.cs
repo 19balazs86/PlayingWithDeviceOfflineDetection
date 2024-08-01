@@ -1,3 +1,4 @@
+using DeviceFunction.Core;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
@@ -18,23 +19,29 @@ public sealed class DeviceFunctions
     }
 
     [Function(nameof(HandleMessages))]
-    public async Task HandleMessages(
+    [SignalROutput(HubName = DashboardFunctions.SignalRHubName)]
+    public async Task<SignalRMessageAction> HandleMessages(
         [QueueTrigger(DeviceQueue)] string deviceId,
         [DurableClient] DurableTaskClient durableClient)
     {
         _logger.LogInformation($"{nameof(HandleMessages)} function processing Device-#{deviceId}");
 
-        //await durableClient.SignalEntityAsync<IDeviceEntity>(getEntityId(deviceId), device => device.MessageReceived());
+        await durableClient.Entities.SignalEntityAsync(DeviceEntity.CreateEntityId(deviceId), nameof(DeviceEntity.MessageReceived));
+
+        return new SignalRMessageAction(target: "statusChanged", [new { deviceId, status = "online" }]);
     }
 
     [Function(nameof(HandleOfflineMessages))]
-    public async Task HandleOfflineMessages(
+    [SignalROutput(HubName = DashboardFunctions.SignalRHubName)]
+    public async Task<SignalRMessageAction> HandleOfflineMessages(
         [QueueTrigger(TimeoutQueue)] string deviceId,
         [DurableClient] DurableTaskClient durableClient)
     {
         _logger.LogInformation($"{nameof(HandleOfflineMessages)} function processing Device-#{deviceId}");
 
-        //await durableClient.SignalEntityAsync<IDeviceEntity>(getEntityId(deviceId), device => device.DeviceTimeout());
+        await durableClient.Entities.SignalEntityAsync(DeviceEntity.CreateEntityId(deviceId), nameof(DeviceEntity.DeviceTimeout));
+
+        return new SignalRMessageAction(target: "statusChanged", [new { deviceId, status = "offline" }]);
     }
 
     [Function(nameof(HandleDeleteMessages))]
@@ -44,6 +51,6 @@ public sealed class DeviceFunctions
     {
         _logger.LogInformation($"{nameof(HandleDeleteMessages)} function processing Device-#{deviceId}");
 
-        //await durableClient.SignalEntityAsync<IDeviceEntity>(getEntityId(deviceId), device => device.DeleteDevice());
+        await durableClient.Entities.SignalEntityAsync(DeviceEntity.CreateEntityId(deviceId), "Delete");
     }
 }
