@@ -53,4 +53,23 @@ public sealed class DeviceFunctions
 
         await durableClient.Entities.SignalEntityAsync(DeviceEntity.CreateEntityId(deviceId), "Delete");
     }
+
+    //[Function(nameof(HandleEventGridMessages))]
+    //[SignalROutput(HubName = DashboardFunctions.SignalRHubName)]
+    //public async Task<SignalRMessageAction> HandleEventGridMessages(
+    //    [EventGridTrigger(IsBatched = false)] CloudEvent cloudEvent,
+    //    [DurableClient] DurableTaskClient durableClient)
+    //{
+    //    // Install-Package Microsoft.Azure.Functions.Worker.Extensions.EventGrid
+    //    // Event Grid binding: https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid
+    //    // Test locally: https://learn.microsoft.com/en-us/azure/communication-services/how-tos/event-grid/local-testing-event-grid
+    //    // I am sending a number as data, but in case of string: data: "1" -> you need to deviceId.Trim('"')
+    //    string deviceId = cloudEvent.Data?.ToString() ?? "n/a";
+
+    //    _logger.LogInformation($"{nameof(HandleEventGridMessages)} function processing Device-#{deviceId}");
+
+    //    await durableClient.Entities.SignalEntityAsync(DeviceEntity.CreateEntityId(deviceId), nameof(DeviceEntity.MessageReceived));
+
+    //    return new SignalRMessageAction(target: "statusChanged", [new { deviceId, status = "online" }]);
+    //}
 }

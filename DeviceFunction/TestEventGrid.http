@@ -1,0 +1,16 @@
+@HostAddress = http://localhost:7228
+@FunctionName = HandleEventGridMessages
+
+POST {{HostAddress}}/runtime/webhooks/EventGrid?functionName={{FunctionName}}
+Content-Type: application/json
+aeg-event-type: Notification
+
+{
+  "id": "725aa233-4530-4301-95c5-cfc834aa4034",
+  "source": "Device-Source",
+  "type": "Device-Type",
+  "subject": "online",
+  "data": 1,
+  "time": "2024-08-08T08:05:12.6639555+00:00",
+  "specversion": "1.0"
+}
