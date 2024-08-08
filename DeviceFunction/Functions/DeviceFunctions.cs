@@ -62,7 +62,10 @@ public sealed class DeviceFunctions
     //{
     //    // Install-Package Microsoft.Azure.Functions.Worker.Extensions.EventGrid
     //    // Event Grid binding: https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid
+
+    //    // Azure: You have a subscription, and the event handler is an Azure Function pointing to this endpoint method
     //    // Test locally: https://learn.microsoft.com/en-us/azure/communication-services/how-tos/event-grid/local-testing-event-grid
+
     //    // I am sending a number as data, but in case of string: data: "1" -> you need to deviceId.Trim('"')
     //    string deviceId = cloudEvent.Data?.ToString() ?? "n/a";
 
