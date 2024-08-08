@@ -54,18 +54,23 @@ public sealed class DeviceFunctions
         await durableClient.Entities.SignalEntityAsync(DeviceEntity.CreateEntityId(deviceId), "Delete");
     }
 
+    //-------------------------------------------------------------------------------------------------------------------------------
+    // Install-Package Microsoft.Azure.Functions.Worker.Extensions.EventGrid
+    // Binding: https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid
+
+    // -> Azure: Scenario for production: You have an EventGrid-Topic endpoint.
+    // You publish EventGridEvent or CloudEvent messages using the Azure.Messaging.EventGrid package.
+    // On that topic, you have a subscription, and the event handler is an Azure Function pointing to this endpoint method
+
+    // -> Test it locally: https://learn.microsoft.com/en-us/azure/communication-services/how-tos/event-grid/local-testing-event-grid
+    // Use the POST request in this file: TestEventGrid.http
+
     //[Function(nameof(HandleEventGridMessages))]
     //[SignalROutput(HubName = DashboardFunctions.SignalRHubName)]
     //public async Task<SignalRMessageAction> HandleEventGridMessages(
     //    [EventGridTrigger(IsBatched = false)] CloudEvent cloudEvent,
     //    [DurableClient] DurableTaskClient durableClient)
     //{
-    //    // Install-Package Microsoft.Azure.Functions.Worker.Extensions.EventGrid
-    //    // Event Grid binding: https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid
-
-    //    // Azure: You have a subscription on an Event Grid topic, and the event handler is an Azure Function pointing to this endpoint method
-    //    // Test locally: https://learn.microsoft.com/en-us/azure/communication-services/how-tos/event-grid/local-testing-event-grid
-
     //    // I am sending a number as data, but in case of string: data: "1" -> you need to deviceId.Trim('"')
     //    string deviceId = cloudEvent.Data?.ToString() ?? "n/a";
 
