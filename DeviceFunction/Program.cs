@@ -40,6 +40,9 @@ public static class Program
             // Messages need to be encoded as Base64 because the QueueTrigger functions that way
             clients.AddQueueServiceClient(storageConnString)
                 .ConfigureOptions(options => options.MessageEncoding = QueueMessageEncoding.Base64);
+
+            // You can use the Service URL with DefaultAzureCredential, if you set the role assignment for the SystemManagedIdentity of the function
+            // clients.AddQueueServiceClient(new Uri("https://<StorageAccountName>.queue.core.windows.net")).WithCredential(new DefaultAzureCredential());
         });
 
         services.addDelayedQueueHandler(DeviceFunctions.TimeoutQueue, TimeoutQueueHandlerKey, TimeSpan.FromSeconds(30));
