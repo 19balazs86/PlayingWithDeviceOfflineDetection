@@ -8,12 +8,16 @@
     }
   },
   "extensions": {
+    "queues": {
+      "maxPollingInterval": "00:00:30",
+      "messageEncoding": "base64" // Base64 is the default setting, but it can be set to 'none,' as the new QueueClient uses 'none' by default
+    },
     "durableTask": {
       "hubName": "Devices",
+      "maxConcurrentActivityFunctions": 10,
       "storageProvider": {
-        "partitionCount": 4 //16
-      },
-      "maxConcurrentActivityFunctions": 250
+        "partitionCount": 4
+      }
     }
   }
 }
