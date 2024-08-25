@@ -72,7 +72,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   location: rgLocation
   tags: tags
   kind: '' // Leave it empty for windows. Otherwise: 'linux' and required to set properties.reserved: true
-  sku: {
+  sku: { // 'Y1-Dynamic' is for Consumption plan Functions
     name: 'Y1'
     tier: 'Dynamic'
   }
