@@ -83,13 +83,17 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-09-01' = {
 // https://learn.microsoft.com/en-us/azure/templates/microsoft.web/sites
 
 var storageAccountConnString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-var signalRConnString = signalR.listKeys().primaryConnectionString
+
+//var signalRConnString = signalR.listKeys().primaryConnectionString
 
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: 'DeviceOfflineDetection'
   location: rgLocation
   tags: tags
   kind: 'functionapp'
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     serverFarmId: hostingPlan.id
     httpsOnly: true
@@ -108,10 +112,10 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: applicationInsights.properties.ConnectionString
         }
-        {
-          name: 'AzureSignalRConnectionString'
-          value: signalRConnString
-        }
+        // {
+        //   name: 'AzureSignalRConnectionString' // Use the Service Connector to set the connection string
+        //   value: signalRConnString
+        // }
         {
           name: 'WEBSITE_CONTENTSHARE'
           value: toLower('DeviceOfflineDetection')
@@ -129,6 +133,43 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
           value: '1'
         }
       ]
+    }
+  }
+}
+
+// --> Service Connector/Linker
+// - Bicep: https://learn.microsoft.com/en-us/azure/templates/microsoft.servicelinker/linkers
+// - Doc: https://learn.microsoft.com/en-us/azure/service-connector/how-to-integrate-signalr
+
+// To show the resource definition
+// 1) az webapp connection list --resource-group <RgName> --name <AppName>
+// 2) az resource show --ids /subscriptions/<GUID>/resourceGroups/<RgName>/providers/Microsoft.Web/sites/<AppName>/providers/Microsoft.ServiceLinker/linkers/<LinkerName>
+
+resource serviceConnector 'Microsoft.ServiceLinker/linkers@2022-11-01-preview' = {
+  name: 'SignalR_Connector'
+  scope: functionApp
+  properties: {
+    clientType: 'dotnet'
+    targetService: {
+      type: 'AzureResource'
+      id: signalR.id
+    }
+    authInfo: {
+      authType: 'systemAssignedIdentity'
+      deleteOrUpdateBehavior: 'Default'
+      roles: [] // If not defined, the default will be used: SignalR Service Owner: 7e4f1700-ea5a-4f59-8f37-079cfe29dce3
+    }
+    // authInfo: { // This version uses the full connection string with a key, so it does not require Managed Identity
+    //   authType: 'secret'
+    //   secretInfo: {
+    //     secretType: 'rawValue'
+    //   }
+    // }
+    configurationInfo: {
+      customizedKeys: {
+        // Change the default linker environment variable name to match the one used by Azure Function SignalR binding by default
+        AZURE_SIGNALR_CONNECTIONSTRING: 'AzureSignalRConnectionString'
+      }
     }
   }
 }
