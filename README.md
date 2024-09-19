@@ -1,6 +1,7 @@
 # Playing with device offline detection using Durable Entities
 
-The idea of this concept came from [Device Offline detection with Durable Entities](https://dev.to/azure/device-offline-detection-with-durable-entities-e8g) by Kees Schollaart. I wanted to try out and learn from this.
+- The idea of this concept came from [Device Offline detection with Durable Entities](https://dev.to/azure/device-offline-detection-with-durable-entities-e8g) by Kees Schollaart. I wanted to try out and learn from this
+- I have adopted Azure Functions with Durable Entities in the style of the actor model using Orleans in [this repository](https://github.com/19balazs86/AspireOrleansDeviceOfflineDetection)
 
 #### Useful links
 
