@@ -28,6 +28,15 @@ public static class DashboardFunctions
         return await req.createStringResponseAsync(dashboardHTML);
     }
 
+    [Function(nameof(SendHeartbeat))]
+    [QueueOutput(DeviceFunctions.DeviceQueue)]
+    public static string[] SendHeartbeat([HttpTrigger(AuthorizationLevel.Anonymous, Route = "send-heartbeat")] HttpRequestData req)
+    {
+        string[] deviceIds = Enumerable.Range(0, 10).Select(_ => Random.Shared.Next(1, 21).ToString()).ToArray();
+
+        return deviceIds;
+    }
+
     private static async Task<HttpResponseData> createStringResponseAsync(
         this HttpRequestData request,
         string value,
